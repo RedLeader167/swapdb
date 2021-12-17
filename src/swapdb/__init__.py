@@ -5,18 +5,52 @@ _SWAPDB_INF = ["nsdb", 1]
 class SwapDBException(Exception):
     pass
 
-class Condition:
-    def __init__(self):
-        raise SwapDBException("Do not use Condition, instead use other classes (see docs).")
+class Query:
+    def __init__(self, type: str, db: dict, table: str):
+        self.type = type
+        self.table = table
+        self.db = db
+        self.q = []
+    
+    def where_equals(self, db_identifier: str, value: object) -> object:
+        """
+        Row, where column equals specified value.
+        """
+        self.q.append(["we", db_identifier, value])
+        return self
+    
+    def get(self) -> object:
+        """
+        Complete the query.
+        """
+        if self.type == "select":
+            rows = []
+            for i in self.q:
+                if i[0] == "we":
+                    id = None
+                    for i1 in range(len(self.db["tables"][self.table]["header"])):
+                        if i[1] == self.db["tables"][self.table]["header"][i1]:
+                            id = i1
+                            break
+                    if id == None:
+                        raise SwapDBException("No column with such identifier.")
+                    for i1 in self.db["tables"][self.table]["data"]:
+                        if i1[id] == i[2]:
+                            rows.append(i1)
+                    for i1 in rows:
+                        if i1[id] != i[2]:
+                            rows.remove(i1)
+            return rows
+        else:
+            raise SwapDBException("Unknown query type.")
 
-class Equal(Condition):
-    def __init__(self, first, second):
+def create(path):
+    db = {
+        "format": _SWAPDB_INF,
+        "tables": {}
+    }
+    open(path, "w").write(json.dumps(db))
 
-class selector:
-    def __init__(self):
-        self.c = []
-    def where(self, condition):
-        if isinstance("")
 class SwapDB:
     def __init__(self, path: str):
         if not os.path.isfile(path):
@@ -65,9 +99,24 @@ class SwapDB:
         Example:
         db.insert("MyTable", [1, "John"])
         """
-        pass
+        if table not in self.db["tables"]:
+            raise SwapDBException("Table already exists.")
+        if len(self.db["tables"][table]["header"]) != len(data):
+            raise SwapDBException("Head size and data size should be same!")
+        self.db["tables"][table]["data"].append(data)
+        self.__save()
+        
+    def select(self, table: str) -> Query:
+        """
+        Select something from db.
+        Example:
+        print(db.select().where_equals("id", 1).get())
+        """
+        return Query(type="select", db=self.db, table=table)
 
 if __name__ == "__main__":
     db = SwapDB("test.json")
     print(', '.join(db.tables()))
-    db.create_table("MyTable", ["id", "name"])
+    #db.create_table("MyTable", ["id", "name"])
+    db.insert("MyTable", [3, "Peter"])
+    print(db.select("MyTable").where_equals("id", 3).get())

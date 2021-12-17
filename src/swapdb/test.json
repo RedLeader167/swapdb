@@ -1,13 +1,1 @@
-{
-	"format": ["nsdb", 1],
-	"tables": {
-		"test": {
-			"header": ["id", "name"],
-			"data": [[1, "John"], [2, "Anne"]]
-		}, 
-		"MyTable": {
-			"header": ["id", "name"],
-			"data": []
-		}
-	}
-}
+{"format": ["nsdb", 1], "tables": {"MyTable": {"header": ["id", "name"], "data": [[1, "John"], [2, "Anne"], [3, "Peter"]]}}}
